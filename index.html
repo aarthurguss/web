@@ -2,181 +2,77 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Galeria de Álbuns Completa</title>
-<style>
-body{font-family:Arial,sans-serif;margin:0;background:#111;color:#fff;transition:0.5s}
-header{display:flex;justify-content:space-between;align-items:center;padding:15px;background:#1e1e1e;position:relative}
-button{padding:8px 12px;border:none;border-radius:6px;cursor:pointer;transition:0.2s}
-button:hover{opacity:0.8}
-.login{background:#3a7afe;color:white}
-.container{padding:20px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:15px}
-.card{background:#1c1c1c;padding:10px;border-radius:10px;transition:0.3s;position:relative}
-.card:hover{transform:scale(1.02)}
-.card img,.card video{width:100%;border-radius:8px}
-.actions{display:flex;gap:8px;margin-top:8px}
-input,textarea{width:100%;margin-top:6px;padding:6px;border-radius:6px;border:none}
-.panel{background:#1c1c1c;padding:15px;border-radius:10px;margin-bottom:20px}
-.hidden{display:none}
-.album-card{background:#222;padding:10px;border-radius:10px;cursor:pointer;transition:0.3s;position:relative;text-align:center}
-.album-card:hover{transform:scale(1.02)}
-.album-card img{width:100%;height:150px;object-fit:cover;border-radius:8px}
-.album-buttons{position:absolute;top:5px;right:5px;display:flex;gap:5px}
-.album-buttons button{padding:3px 6px;font-size:12px;background:#3a7afe;color:white;border-radius:4px}
-.marquee-container{background:#1e1e1e;padding:5px;overflow:hidden;white-space:nowrap;margin-bottom:15px}
-.marquee-text{display:inline-block;padding-left:100%;animation:marquee 15s linear infinite}
-@keyframes marquee{0%{transform:translateX(0%)}100%{transform:translateX(-100%)}} 
-#albumTitle{font-size:20px;margin-bottom:10px;color:#3a7afe;}
-#adminUploadBtn{background:#3a7afe;color:white;margin-top:10px;width:100%;padding:10px;font-weight:bold;}
-#modalOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:900;}
-#loginBox,#albumLoginModal,#albumManageModal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1c1c1c;padding:20px;border-radius:10px;width:400px;z-index:1000;}
-#albumManageModal input,#albumLoginModal input,#loginBox input{margin-bottom:10px;}
-#albumManageModal button,#albumLoginModal button,#loginBox button{margin-top:5px;width:100%;padding:8px;}
-</style>
+<title>Galeria de Álbuns</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <header>
-<h2>Galeria de Álbuns</h2>
-<button class="login" id="adminBtn">Login Admin</button>
+  <h2>Galeria de Álbuns</h2>
+  <button id="adminBtn" class="login">Login Admin</button>
 </header>
 
 <div class="marquee-container">
-<div id="marquee" class="marquee-text">Bem-vindo à nossa Galeria!</div>
+  <div id="marquee" class="marquee-text">Bem-vindo à nossa Galeria!</div>
 </div>
 
 <div class="container">
-<div id="adminPanel" class="panel hidden">
-<h3>Painel Admin</h3>
-<h4>Criar Novo Álbum</h4>
-<input type="text" id="albumName" placeholder="Nome do Álbum">
-<input type="text" id="albumUser" placeholder="Usuário do Álbum (opcional)">
-<input type="password" id="albumPass" placeholder="Senha do Álbum (opcional)">
-<input type="file" id="albumFiles" multiple>
-<button onclick="createAlbum()">Criar Álbum</button>
 
-<h4>Editar Faixa de Texto</h4>
-<input type="text" id="marqueeInput" placeholder="Texto da faixa">
-<button onclick="updateMarquee()">Atualizar Faixa</button>
+  <!-- Painel Admin -->
+  <div id="adminPanel" class="panel hidden">
+    <h3>Painel Admin</h3>
 
-<h4>Papel de Parede</h4>
-<input type="file" id="wallpaperFile" accept="image/*">
-<button onclick="setWallpaper()">Aplicar Papel de Parede</button>
+    <h4>Criar Novo Álbum</h4>
+    <input type="text" id="albumName" placeholder="Nome do Álbum">
+    <input type="text" id="albumUser" placeholder="Usuário do Álbum (opcional)">
+    <input type="password" id="albumPass" placeholder="Senha do Álbum (opcional)">
+    <input type="file" id="albumFiles" multiple>
+    <button onclick="createAlbum()">Criar Álbum</button>
 
-<button onclick="logout()" style="background:red;color:white;margin-top:10px;">Sair</button>
+    <h4>Editar Faixa de Texto</h4>
+    <input type="text" id="marqueeInput" placeholder="Texto da faixa">
+    <button onclick="updateMarquee()">Atualizar Faixa</button>
+
+    <h4>Papel de Parede</h4>
+    <input type="file" id="wallpaperFile" accept="image/*">
+    <button onclick="setWallpaper()">Aplicar Papel de Parede</button>
+
+    <button onclick="logout()" style="background:red;color:white;margin-top:10px;">Sair</button>
+  </div>
+
+  <!-- Álbuns -->
+  <div id="albumsGrid" class="grid"></div>
+
+  <!-- Galeria de Arquivos do Álbum -->
+  <div id="gallery" class="grid hidden"></div>
+  <div id="galleryAdminControls" class="panel hidden">
+    <input type="file" id="addFiles" multiple>
+    <button onclick="addFilesToAlbum()">Adicionar Fotos/Vídeos</button>
+    <button onclick="toggleDeleteMode()">Deletar Arquivos</button>
+    <button onclick="confirmDeleteFiles()">Apagar Selecionados</button>
+  </div>
+  <button id="backBtn" class="hidden" onclick="backToAlbums()">← Voltar aos Álbuns</button>
+
 </div>
 
-<div id="albumTitle" class="hidden"></div>
-<div id="albumsGrid" class="grid"></div>
-<div id="gallery" class="grid hidden"></div>
-<div id="galleryAdminControls" class="panel hidden">
-<input type="file" id="addFiles" multiple>
-<button onclick="addFilesToAlbum()">Adicionar Fotos/Vídeos</button>
-<button onclick="toggleDeleteMode()">Deletar Arquivos</button>
-<button onclick="confirmDeleteFiles()">Apagar Selecionados</button>
-</div>
-<button id="backBtn" class="hidden" onclick="backToAlbums()">← Voltar aos Álbuns</button>
-</div>
-
-<div id="modalOverlay" class="hidden"></div>
-
+<!-- Modal Login do Álbum -->
 <div id="albumLoginModal" class="hidden">
-<h4>Login Álbum</h4>
-<input type="text" id="albumLoginUser" placeholder="Usuário">
-<input type="password" id="albumLoginPass" placeholder="Senha">
-<button onclick="confirmAlbumLogin()">Entrar</button>
-<button onclick="closeAlbumLogin()" style="background:red;color:white;">Cancelar</button>
+  <h4>Login Álbum</h4>
+  <input type="text" id="albumLoginUser" placeholder="Usuário">
+  <input type="password" id="albumLoginPass" placeholder="Senha">
+  <button onclick="confirmAlbumLogin()">Entrar</button>
+  <button onclick="closeAlbumLogin()" style="background:red;color:white;">Cancelar</button>
 </div>
 
+<!-- Modal Login Admin -->
 <div id="loginBox" class="panel hidden">
-<h3>Login Admin</h3>
-<input id="user" placeholder="usuário">
-<input id="pass" type="password" placeholder="senha">
-<button id="loginBtn">Entrar</button>
-<button onclick="closeLogin()" style="background:red;color:white;">Cancelar</button>
+  <h3>Login Admin</h3>
+  <input id="user" placeholder="usuário">
+  <input id="pass" type="password" placeholder="senha">
+  <button id="loginBtn">Entrar</button>
+  <button onclick="closeLogin()" style="background:red;color:white;">Cancelar</button>
 </div>
 
-<script>
-let adminUser="admin";
-let adminPass="123";
-let albums = JSON.parse(localStorage.getItem("albums")||"[]");
-let currentAlbumIndex = null;
-let albumLoginAttempts = {};
-let tempAlbumLoginIndex = null;
-let deleteMode = false;
-
-function save(){ try { localStorage.setItem("albums", JSON.stringify(albums)); } catch(e){ if(e.name==='QuotaExceededError') alert('Tamanho dos álbuns excede o limite do navegador.'); } }
-
-function renderAlbums(){
-  let grid=document.getElementById("albumsGrid"); grid.innerHTML="";
-  albums.forEach((album,i)=>{
-    let card=document.createElement("div");
-    card.className="album-card";
-    card.onclick=()=>openAlbumOrLogin(i);
-    let cover=album.cover?`<img src='${album.cover}'>`:`<div style='height:150px;background:#333;border-radius:8px;line-height:150px;'>Sem Capa</div>`;
-    card.innerHTML=`${cover}<h4>${album.name}</h4>`;
-    if(!document.getElementById("adminPanel").classList.contains("hidden")){
-      let btnContainer=document.createElement("div");
-      btnContainer.className="album-buttons";
-      btnContainer.innerHTML=`<button onclick='editAlbum(${i},event)'>✏️</button> <button onclick='deleteAlbum(${i},event)'>🗑️</button>`;
-      card.appendChild(btnContainer);
-    }
-    grid.appendChild(card);
-  });
-}
-
-function openAlbumOrLogin(index){
-  let album = albums[index];
-  if(!album.user && !album.pass){
-    openAlbum(index);
-  } else {
-    tempAlbumLoginIndex = index;
-    document.getElementById('albumLoginModal').classList.remove('hidden');
-    document.getElementById('modalOverlay').classList.remove('hidden');
-  }
-}
-
-function openAlbum(index){
-  currentAlbumIndex = index;
-  document.getElementById('albumsGrid').classList.add('hidden');
-  document.getElementById('albumTitle').classList.remove('hidden');
-  document.getElementById('albumTitle').innerText = albums[index].name;
-  document.getElementById('gallery').classList.remove('hidden');
-  renderGallery();
-  if(!document.getElementById('adminPanel').classList.contains('hidden')){
-    document.getElementById('galleryAdminControls').classList.remove('hidden');
-  }
-}
-
-function setWallpaper(){
-  let file=document.getElementById('wallpaperFile').files[0];
-  if(file){
-    let reader=new FileReader();
-    reader.onload=(e)=>{ document.body.style.backgroundImage=`url('${e.target.result}')`; document.body.style.backgroundSize='cover'; document.body.style.backgroundRepeat='no-repeat'; };
-    reader.readAsDataURL(file);
-  }
-}
-
-let adminBtn=document.getElementById("adminBtn");
-let loginBtn=document.getElementById("loginBtn");
-adminBtn.onclick = () => { document.getElementById("loginBox").classList.toggle("hidden"); };
-loginBtn.onclick = () => {
-  let u=document.getElementById("user").value;
-  let p=document.getElementById("pass").value;
-  if(u===adminUser && p===adminPass){
-    document.getElementById("adminPanel").classList.remove("hidden");
-    document.getElementById("loginBox").classList.add("hidden");
-    renderAlbums();
-    alert("Login Admin realizado");
-  } else {
-    alert("Usuário ou senha incorretos");
-  }
-};
-
-function closeLogin(){ document.getElementById("loginBox").classList.add("hidden"); }
-function logout(){ document.getElementById("adminPanel").classList.add("hidden"); renderAlbums(); }
-
-// Demais funções de criação, edição, exclusão de álbuns e manipulação de arquivos permanecem inalteradas
-</script>
+<script src="script.js"></script>
 </body>
 </html>
