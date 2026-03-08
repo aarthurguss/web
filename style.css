@@ -16,3 +16,4 @@ button:hover{opacity:0.8}
 @keyframes marquee{0%{transform:translateX(0%)}100%{transform:translateX(-100%)}}
 #adminPanel,#galleryAdminControls,#loginBox,#albumLoginModal{background:#1c1c1c;padding:15px;border-radius:10px;margin-bottom:20px}
 .hidden{display:none}
+video{max-height:200px}
