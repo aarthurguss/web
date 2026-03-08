@@ -1,16 +1,12 @@
 let adminUser="admin";
 let adminPass="123";
-let albums = JSON.parse(localStorage.getItem("albums")||"[]");
+let albums = JSON.parse(localStorage.getItem("albums")||"[]"); // Apenas metadados
 let currentAlbumIndex = null;
 let deleteMode = false;
 
-// Salvar albums
+// Salvar metadados do álbum
 function save(){ 
-  try { 
-    localStorage.setItem("albums", JSON.stringify(albums)); 
-  } catch(e){ 
-    if(e.name==='QuotaExceededError') alert('Limite de armazenamento atingido!');
-  } 
+  localStorage.setItem("albums", JSON.stringify(albums)); 
 }
 
 // Renderizar álbuns
@@ -30,45 +26,41 @@ function renderAlbums(){
 // Abrir álbum
 function openAlbum(i){
   currentAlbumIndex=i;
-  let album=albums[i];
-  // Verifica se precisa de senha
-  if(album.user || album.pass){
-    document.getElementById("albumLoginModal").classList.remove("hidden");
-    return;
-  }
   showGallery();
 }
 
-// Mostrar arquivos do álbum
+// Mostrar galeria
 function showGallery(){
   let album=albums[currentAlbumIndex];
   let gallery=document.getElementById("gallery");
   gallery.innerHTML="";
+  if(!album.files) album.files=[];
   album.files.forEach((f,index)=>{
     let div=document.createElement("div");
     div.className="card";
-    div.innerHTML=f.type==="image"?`<img src="${f.src}">`:`<video controls src="${f.src}"></video>`;
-    // Download
+    if(f.type==="image") div.innerHTML=`<img src="${f.url}">`;
+    else div.innerHTML=`<video controls src="${f.url}"></video>`;
     let btn=document.createElement("button");
     btn.innerText="Download";
     btn.onclick=()=>{ 
       let a=document.createElement("a");
-      a.href=f.src;
+      a.href=f.url;
       a.download=`arquivo-${index}`;
       a.click();
     };
     div.appendChild(btn);
     gallery.appendChild(div);
   });
+
   document.getElementById("albumsGrid").classList.add("hidden");
   gallery.classList.remove("hidden");
-  if(document.getElementById("adminPanel").classList.contains("hidden")==false){
+  if(!document.getElementById("adminPanel").classList.contains("hidden")){
     document.getElementById("galleryAdminControls").classList.remove("hidden");
   }
   document.getElementById("backBtn").classList.remove("hidden");
 }
 
-// Voltar à lista de álbuns
+// Voltar aos álbuns
 function backToAlbums(){
   document.getElementById("gallery").classList.add("hidden");
   document.getElementById("albumsGrid").classList.remove("hidden");
@@ -82,23 +74,14 @@ function createAlbum(){
   if(!name){ alert("Nome do álbum é obrigatório"); return; }
   let user=document.getElementById("albumUser").value.trim();
   let pass=document.getElementById("albumPass").value;
-  let files=document.getElementById("albumFiles").files;
   let album={name,user,pass,cover:"",files:[]};
-  if(files.length>0){
-    Array.from(files).forEach(f=>{
-      let reader=new FileReader();
-      reader.onload=(e)=>{ album.files.push({src:e.target.result,type:f.type.startsWith("video")?"video":"image"}); save(); };
-      reader.readAsDataURL(f);
-    });
-    album.cover=URL.createObjectURL(files[0]);
-  }
   albums.push(album);
   save();
   renderAlbums();
   alert("Álbum criado!");
 }
 
-// Login admin
+// Admin login
 document.getElementById("adminBtn").onclick = () => { document.getElementById("loginBox").classList.toggle("hidden"); };
 document.getElementById("loginBtn").onclick = () => {
   let u=document.getElementById("user").value;
@@ -129,27 +112,28 @@ function setWallpaper(){
   }
 }
 
-// Upload de arquivos no álbum (admin)
+// Adicionar arquivos (somente admin)
 function addFilesToAlbum(){
   if(currentAlbumIndex===null) return;
   let files=document.getElementById("addFiles").files;
   let album=albums[currentAlbumIndex];
   Array.from(files).forEach(f=>{
-    let reader=new FileReader();
-    reader.onload=(e)=>{ album.files.push({src:e.target.result,type:f.type.startsWith("video")?"video":"image"}); save(); showGallery(); };
-    reader.readAsDataURL(f);
+    let url=URL.createObjectURL(f);
+    album.files.push({url,type:f.type.startsWith("video")?"video":"image"});
+    if(!album.cover && f.type.startsWith("image")) album.cover=url;
   });
-}
-
-// Delete mode
-function toggleDeleteMode(){ deleteMode=!deleteMode; alert(deleteMode?"Modo seleção ativado":"Modo seleção desativado"); }
-function confirmDeleteFiles(){
-  if(currentAlbumIndex===null) return;
-  let album=albums[currentAlbumIndex];
-  album.files=[]; // Simples: apaga todos selecionados (pode ser adaptado para marcar)
   save();
   showGallery();
 }
 
-// Inicial render
+// Deletar arquivos
+function toggleDeleteMode(){ deleteMode=!deleteMode; alert(deleteMode?"Modo seleção ativado":"Modo seleção desativado"); }
+function confirmDeleteFiles(){
+  if(currentAlbumIndex===null) return;
+  albums[currentAlbumIndex].files=[];
+  save();
+  showGallery();
+}
+
+// Inicial
 renderAlbums();
